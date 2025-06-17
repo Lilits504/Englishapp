@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Pro Levels 🌍</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #fdfbfb, #ebedee);
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      text-align: center;
+    }
+    .card {
+      background-color: #ffffff;
+      border-radius: 15px;
+      padding: 2rem;
+      margin: 1rem auto;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    .feedback {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+    #score {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #2e7d32;
+    }
+    .category {
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌟 English Pro Levels 🌟</h1>
+  <p>¡Aprende inglés con temas reales y divertidos! 🎯</p>
+  <div id="score">Progreso: 0/0 ✅</div>
+  <div class="category" id="category">Categoría: Cargando...</div>
+  <div class="card">
+    <p id="question">Cargando pregunta...</p>
+    <input type="text" id="answer" class="form-control" placeholder="Escribe tu respuesta...">
+    <button onclick="checkAnswer()" class="btn btn-primary mt-2">Responder</button>
+    <div id="feedback" class="feedback"></div>
+  </div>
+
+  <audio id="errorSound">
+    <source src="https://www.soundjay.com/button/beep-10.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const questionBank = [
+      // Nivel 1: Comida 🍎
+      { category: "Comida", level: 1, q: "I eat an ___ every morning. (apple/orange/banana)", a: "apple" },
+      { category: "Comida", level: 1, q: "She drinks a glass of ___. (water/milk/juice)", a: "milk" },
+      // Nivel 2: Viajes ✈️
+      { category: "Viajes", level: 2, q: "Where is the ___ station? (bus/train/taxi)", a: "train" },
+      { category: "Viajes", level: 2, q: "I need a ___ to fly. (ticket/visa/phone)", a: "ticket" },
+      // Nivel 3: Salud 🏥
+      { category: "Salud", level: 3, q: "I have a ___. (fever/sun/glass)", a: "fever" },
+      { category: "Salud", level: 3, q: "Take this ___ twice a day. (pill/soup/pen)", a: "pill" },
+      // Nivel 4: Restaurante 🍽️
+      { category: "Restaurante", level: 4, q: "Can I see the ___, please? (menu/door/table)", a: "menu" },
+      { category: "Restaurante", level: 4, q: "I'd like to ___ a pizza. (order/open/draw)", a: "order" },
+      // Nivel 5: Avanzado 🌍
+      { category: "Avanzado", level: 5, q: "The doctor recommended a balanced ___. (diet/travel/movie)", a: "diet" },
+      { category: "Avanzado", level: 5, q: "Tourists often ___ local traditions. (explore/forget/borrow)", a: "explore" },
+    ];
+
+    let score = parseInt(localStorage.getItem('score')) || 0;
+    let total = parseInt(localStorage.getItem('total')) || 0;
+    let current = parseInt(localStorage.getItem('current')) || 0;
+    let missed = JSON.parse(localStorage.getItem('missed') || '[]');
+
+    function updateStorage() {
+      localStorage.setItem('score', score);
+      localStorage.setItem('total', total);
+      localStorage.setItem('current', current);
+      localStorage.setItem('missed', JSON.stringify(missed));
+    }
+
+    function loadQuestion() {
+      const shouldRepeat = Math.random() < 0.3 && missed.length > 0;
+      const question = shouldRepeat
+        ? missed[Math.floor(Math.random() * missed.length)]
+        : questionBank[current];
+
+      document.getElementById('question').innerText = question.q;
+      document.getElementById('answer').value = '';
+      document.getElementById('answer').dataset.correct = question.a;
+      document.getElementById('category').innerText = `Categoría: ${question.category} (Nivel ${question.level})`;
+    }
+
+    function checkAnswer() {
+      const user = document.getElementById('answer').value.trim().toLowerCase();
+      const correct = document.getElementById('answer').dataset.correct.toLowerCase();
+      const currentQ = questionBank[current];
+
+      total++;
+      if (user === correct) {
+        score++;
+        document.getElementById('feedback').innerHTML = '✅ ¡Correcto! ¡Sigue así!';
+        current++;
+      } else {
+        document.getElementById('feedback').innerHTML = '❌ ¡Ups! Esa no era. ¡Inténtalo de nuevo!';
+        document.getElementById('errorSound').play();
+        if (!missed.includes(currentQ)) missed.push(currentQ);
+        current++;
+      }
+
+      if (current >= questionBank.length) current = 0;
+
+      document.getElementById('score').innerText = `Progreso: ${score}/${total} ✅`;
+      updateStorage();
+      setTimeout(loadQuestion, 2500);
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
